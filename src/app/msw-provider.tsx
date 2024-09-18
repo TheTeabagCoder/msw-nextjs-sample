@@ -2,9 +2,16 @@
 import { Suspense, use } from "react";
 
 const mockingEnabledPromise =
-	typeof window !== "undefined" && process.env.NODE_ENV === "development"
-		? import("../mocks/worker").then(async ({ worker }) => {
-				await worker.start();
+	typeof window !== "undefined"
+		? import("../mocks/browser").then(async ({ worker }) => {
+				await worker.start({
+					onUnhandledRequest(request, print) {
+						if (request.url.includes("_next")) {
+							return;
+						}
+						print.warning();
+					},
+				});
 		  })
 		: Promise.resolve();
 
